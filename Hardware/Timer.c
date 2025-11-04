@@ -8,15 +8,7 @@
 extern uint8_t current_mode;     // 当前控制模式：1-速度，2-位置
 extern int16_t target_speed;     // 电机目标速度
 
-// =====================================================
-// 函数名称：Timer_Init
-// 功能描述：初始化TIM2定时器，产生10ms周期中断
-// 用途：
-// 1. 读取编码器速度/位置
-// 2. 执行PID控制
-// 3. 更新电机PWM输出
-// 4. 向上位机发送数据
-// =====================================================
+
 void Timer_Init(void)
 {
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE);
@@ -46,25 +38,21 @@ void Timer_Init(void)
     TIM_Cmd(TIM2, ENABLE);
 }
 
-// =====================================================
-// 函数名称：TIM2_IRQHandler
-// 功能描述：TIM2中断服务函数，每10ms执行一次
-// 功能：读取编码器数据 → PID计算 → 更新PWM → 发送数据
-// =====================================================
+
 void TIM2_IRQHandler(void)
 {
     if(TIM_GetITStatus(TIM2, TIM_IT_Update) == SET)
     {
-        // ---------- 读取编码器数据 ----------
+        //读取编码器数据
         int16_t speed1 = Encoder_Get_Speed(1);
         int16_t speed2 = Encoder_Get_Speed(2);
         int32_t pos1 = Encoder_Get_Position(1);
         int32_t pos2 = Encoder_Get_Position(2);
 
-        // ---------- 模式1：速度控制 ----------
+        // 模式1：速度控制
         if(current_mode == 1)
         {
-            int16_t adjusted_target = target_speed; // ★修改：目标速度补偿
+            int16_t adjusted_target = target_speed; // 目标速度补偿
 
             // 静摩擦补偿
             if(abs(target_speed) > 5)
@@ -75,7 +63,7 @@ void TIM2_IRQHandler(void)
             int16_t pwm1 = Speed_PID_Compute(adjusted_target, speed1); // PID计算
             Motor_Set_Speed(1, pwm1);
         }
-        // ---------- 模式2：位置跟随 ----------
+        //模式2：位置跟随
         else
         {
             static uint8_t pulse_active = 0;  // 脉冲激活标志
@@ -108,7 +96,7 @@ void TIM2_IRQHandler(void)
             Motor_Set_Speed(1, 0);  // 位置模式下电机1自由转动
         }
 
-        // ---------- 发送数据到上位机 ----------
+        //发送数据到上位机
         static uint8_t send_counter = 0;
         if(send_counter++ >= 2) // 每20ms发送一次
         {

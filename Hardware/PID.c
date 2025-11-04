@@ -1,30 +1,18 @@
 #include "stm32f10x.h"
 #include "stdlib.h"
 
-/* ==================== PID 控制模块 ====================
- * 本文件实现两个控制器：
- * 1️速度环（增量式 PID）
- * 2️位置环（简化比例控制）
- * 
- * 功能保持不变，仅进行了：
- *  - 命名微调
- *  - 注释强化
- *  - 输出限幅与结构说明细化
- *  - 保留原有接口方便主函数调用
- * ===================================================== */
 
-/* ------------------ 速度环 PID 参数 ------------------ */
-static float speed_output = 0.0f;        // ★修改：原 speed_Out → speed_output（更易读）
+static float speed_output = 0.0f;        
 static float speed_kp = 2.0f;
 static float speed_ki = 0.5f;
 static float speed_kd = 0.1f;
 
 // 误差队列：error[0] 当前误差, error[1] 上次误差, error[2] 上上次误差
-static float speed_err[3] = {0, 0, 0};   // ★修改：原 speed_error → speed_err
+static float speed_err[3] = {0, 0, 0};   
 
-/* ------------------ 位置环 PID 参数 ------------------ */
+/* 位置环 PID 参数  */
 // 位置环使用纯比例控制（无积分与微分项，减少机械振荡）
-static float position_kp = 0.15f;        // ★修改：原 pos_kp → position_kp
+static float position_kp = 0.15f;       
 
 /**
  * @brief 增量式速度 PID 计算函数
@@ -68,9 +56,9 @@ int16_t Speed_PID_Compute(int16_t target, int16_t actual)  // ★修改：原函
  * 
  * 由于位置控制容易产生振荡，因此本环路不使用积分项。
  */
-int16_t Position_PID_Compute(int32_t target, int32_t actual)  // ★修改：函数名优化
+int16_t Position_PID_Compute(int32_t target, int32_t actual)  
 {
-    int32_t pos_err = target - actual;  // ★修改：原 error → pos_err
+    int32_t pos_err = target - actual;  
     float output_val = position_kp * pos_err;
 
     // 严格限幅：位置控制仅需较小力矩输出
@@ -103,7 +91,7 @@ void Speed_PID_SetParams(float p, float i, float d)
 void Position_PID_SetParams(float p, float i, float d)
 {
     position_kp = p;
-    // ★新增注释：i、d参数被忽略，保留接口以保持兼容性
+    // i、d参数被忽略，保留接口以保持兼容性
 }
 
 /**
@@ -115,5 +103,5 @@ void Position_PID_SetParams(float p, float i, float d)
 void Speed_PID_Reset(void)
 {
     speed_err[0] = speed_err[1] = speed_err[2] = 0;
-    speed_output = 0.0f;  // ★修改：变量名与注释优化
+    speed_output = 0.0f;  
 }
