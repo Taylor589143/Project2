@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 extern uint8_t current_mode;     // 当前控制模式：1-速度，2-位置
-extern int16_t target_speed;     // 电机目标速度
+extern int16_t target_speed;     // 电机目标速度~~
 
 
 void Timer_Init(void)
